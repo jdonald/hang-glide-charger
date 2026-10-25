@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Hang Glide Charger</title>
+<meta name="description" content="Charge up on treadmills, then hang glide across the sky! A 3D mobile web game — pick a cat, bunny, dog or fox.">
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#38bdf8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Glide Charger">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="hud-top">
+    <div id="power-pill" title="Your glide power">⚡ <span id="power-val">0</span></div>
+    <div id="level-pill" class="hidden">🪂 <span id="level-name"></span>
+      <div id="progress-track"><div id="progress-fill"></div></div>
+    </div>
+    <div id="hud-btns">
+      <button id="btn-char" class="hud-btn" aria-label="Change character">🐱</button>
+      <button id="btn-help" class="hud-btn" aria-label="Help">❓</button>
+      <button id="btn-sound" class="hud-btn" aria-label="Sound on or off">🔊</button>
+    </div>
+  </div>
+  <div id="charge-bar-wrap" class="hidden">
+    <div id="charge-label">CHARGING… +<span id="charge-rate">1</span>/s</div>
+    <div id="charge-track"><div id="charge-fill"></div></div>
+  </div>
+  <div id="glide-stats" class="hidden">
+    <div>Speed <b id="stat-speed">0</b></div>
+    <div>Height <b id="stat-alt">0</b>m</div>
+    <div>Rings <b id="stat-rings">0</b> ⭐</div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+<div id="prompt" class="hidden"></div>
+
+<!-- Touch controls -->
+<div id="touch-ui" class="hidden">
+  <div id="joystick"><div id="stick"></div></div>
+  <div id="action-btns">
+    <button id="btn-action" class="action-btn primary hidden">LAUNCH 🚀</button>
+    <button id="btn-boost" class="action-btn boost hidden">BOOST ⚡</button>
+    <button id="btn-jump" class="action-btn">JUMP</button>
+  </div>
+  <div id="camera-hint">Drag right side to look around 👀</div>
+</div>
+
+<!-- Character select / main menu -->
+<div id="menu">
+  <div id="menu-card">
+    <h1>🪂 Hang Glide<br>Charger ⚡</h1>
+    <p class="tagline">Run on treadmills to charge up…<br>then hang glide across the sky!</p>
+    <h2>Pick your glider</h2>
+    <div id="char-grid">
+      <button class="char-card" data-char="cat"><span class="char-emoji">🐱</span><span>Cat</span><small> speedy paws </small></button>
+      <button class="char-card" data-char="bunny"><span class="char-emoji">🐰</span><span>Bunny</span><small> super hopper </small></button>
+      <button class="char-card" data-char="dog"><span class="char-emoji">🐶</span><span>Dog</span><small> loyal flyer </small></button>
+      <button class="char-card" data-char="fox"><span class="char-emoji">🦊</span><span>Fox</span><small> clever glider </small></button>
+    </div>
+    <button id="btn-play" disabled>▶ Play</button>
+    <div id="menu-save" class="hidden">⚡ Saved power: <b id="menu-power">0</b> · Levels done: <b id="menu-done">0/3</b></div>
+    <p class="howto">🏃 Stand on a treadmill to charge power (it works even AFK!)<br>
+    🪂 Walk to a launch gate and glide to the island<br>
+    💻 WASD / arrows + mouse drag &nbsp;·&nbsp; 📱 Left stick + buttons</p>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div id="result" class="hidden">
+  <div id="result-card">
+    <h2 id="result-title">🎉 You made it!</h2>
+    <p id="result-text"></p>
+    <div id="result-stars"></div>
+    <button id="btn-result-hub">🏠 Back to Treadmills</button>
+    <button id="btn-result-retry">↻ Fly Again</button>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div id="help" class="hidden">
+  <div id="help-card">
+    <h2>How to play ❓</h2>
+    <ul>
+      <li>🏃 <b>Charge:</b> Stand on a treadmill — your power ⚡ grows while you run. Better treadmills charge faster, and they keep charging AFK!</li>
+      <li>🪂 <b>Glide:</b> Go to a launch gate at the cliff edge and tap LAUNCH. Steer with the stick. Dive to go faster, climb to float further.</li>
+      <li>⚡ <b>Boost:</b> Tap BOOST while gliding to spend 10⚡ on a burst of speed + lift.</li>
+      <li>⭐ <b>Rings:</b> Fly through golden rings for speed and bonus power.</li>
+      <li>🏝️ <b>Land</b> on the far island to beat the level. Longer levels need more charge — if you splash, go charge more!</li>
+      <li>📷 <b>Camera:</b> Drag on the right side of the screen to look around.</li>
+    </ul>
+    <button id="btn-help-close">Got it!</button>
+  </div>
+</div>
+
+<div id="loading">Loading the sky… 🪂</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>
